@@ -1,0 +1,8 @@
+﻿namespace DaviesIdeas.Models
+{
+    public class CreateIdea
+    {
+        public required string Title { get; set; }
+        public required string Description { get; set; }
+    }
+}

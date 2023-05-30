@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaviesIdeas", "DaviesIdeas\DaviesIdeas.csproj", "{0EE5ADAF-9BFC-4538-99D8-1BA7F1310211}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DaviesWeb", "DaviesWeb\DaviesWeb.csproj", "{0E8BC960-7B8F-4A9B-9D34-0C5BB5BB3657}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0EE5ADAF-9BFC-4538-99D8-1BA7F1310211}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EE5ADAF-9BFC-4538-99D8-1BA7F1310211}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EE5ADAF-9BFC-4538-99D8-1BA7F1310211}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EE5ADAF-9BFC-4538-99D8-1BA7F1310211}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E8BC960-7B8F-4A9B-9D34-0C5BB5BB3657}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E8BC960-7B8F-4A9B-9D34-0C5BB5BB3657}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E8BC960-7B8F-4A9B-9D34-0C5BB5BB3657}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E8BC960-7B8F-4A9B-9D34-0C5BB5BB3657}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9DE7D429-D607-4B56-AB72-4AD762FD15FF}
+	EndGlobalSection
+EndGlobal
