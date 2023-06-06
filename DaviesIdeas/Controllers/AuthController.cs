@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using DaviesIdeas.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace DaviesIdeas.Controllers
 {
@@ -30,72 +31,98 @@ namespace DaviesIdeas.Controllers
         [HttpGet, Authorize(Roles = "Admin, User")]
         public ActionResult<object> GetMe()
         {
-            var userName = _userService.GetMyName();
-            var role = _userService.GetMyRole();
-            var email = _userService.GetMyEmail();
-            var myID = _userService.GetMyId();
+            try
+            {
+                var userName = _userService.GetMyName();
+                var role = _userService.GetMyRole();
+                var email = _userService.GetMyEmail();
+                var myID = _userService.GetMyId();
 
-            return Ok(new {userName,email, role, myID });
+                return Ok(new { userName, email, role, myID });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            
             
         }
         [HttpPost("register")]
 
         public async Task<ActionResult<User>> Register(RegisterUser registerReq)
         {
-            //Check if username is registered
-            var registeredUser = (from c in _dataContext.Users
-                where c.Username.Equals(registerReq.Username)
-                select c).SingleOrDefault();
-
-            if(registeredUser != null)
+            try
             {
-                return BadRequest("Username taken.");
+                //Check if username is registered
+                var registeredUser = (from c in _dataContext.Users
+                                      where c.Username.Equals(registerReq.Username)
+                                      select c).SingleOrDefault();
+
+                if (registeredUser != null)
+                {
+                    return BadRequest("Username taken.");
+                }
+                //Hashes password.
+                string passwordHash = BCrypt.Net.BCrypt.HashPassword(registerReq.Password);
+                User user = new User
+                {
+                    Username = registerReq.Username,
+                    PasswordHash = passwordHash,
+                    Email = registerReq.Email,
+                    Role = registerReq.Role
+                };
+
+                _dataContext.Add(user);
+                await _dataContext.SaveChangesAsync();
+
+                return Ok(user);
             }
-            //Hashes password.
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(registerReq.Password);
-            User user = new User
+            catch (Exception e)
             {
-                Username = registerReq.Username,
-                PasswordHash = passwordHash,
-                Email = registerReq.Email,
-                Role = registerReq.Role
-            };
-
-            _dataContext.Add(user);
-            await _dataContext.SaveChangesAsync();
-
-            return Ok(user);
+                return BadRequest(e.Message);
+            }
+            
         }
 
         [HttpPost("login")]
 
         public ActionResult<User> Login(LoginUser loginReq)
         {
-            var validUser = (from c in _dataContext.Users
-                             where c.Username.Equals(loginReq.Username)
-                             select c).SingleOrDefault();
-            //Search user
-            if (validUser == null)
+            try
             {
-                return BadRequest("User not found.");
-            }
+                var validUser = (from c in _dataContext.Users
+                                 where c.Username.Equals(loginReq.Username)
+                                 select c).SingleOrDefault();
+                //Search user
+                if (validUser == null)
+                {
+                    return BadRequest("User not found.");
+                }
 
-            if (!BCrypt.Net.BCrypt.Verify(loginReq.Password, validUser.PasswordHash))
+                if (!BCrypt.Net.BCrypt.Verify(loginReq.Password, validUser.PasswordHash))
+                {
+                    return BadRequest("Wrong Password.");
+                }
+
+                HttpContext.Session.SetString(SessionVariables.SessionKeyUsername, validUser.Username);
+                HttpContext.Session.SetInt32(SessionVariables.SessionKeyId, validUser.Id);
+
+
+                string token = CreateToken(validUser);
+                return Ok(token);
+            }
+            catch (Exception e)
             {
-                return BadRequest("Wrong Password.");
+                return BadRequest(e.Message);
             }
-
-            HttpContext.Session.SetString(SessionVariables.SessionKeyUsername, validUser.Username);
-            HttpContext.Session.SetInt32(SessionVariables.SessionKeyId, validUser.Id);
-
-
-            string token = CreateToken(validUser);
-            return Ok(token);
+            
         }
 
         private string CreateToken(User user)
         {
-            List<Claim> claims = new List<Claim>
+            try
+            {
+                List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Role, user.Role),
@@ -103,20 +130,24 @@ namespace DaviesIdeas.Controllers
                 new Claim(ClaimTypes.Hash, user.Id.ToString())
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration.GetSection("AppSettings:Token").Value!));
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                    _configuration.GetSection("AppSettings:Token").Value!));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
-            var token = new JwtSecurityToken(
-                    claims: claims,
-                    expires: DateTime.Now.AddDays(1),
-                    signingCredentials: creds
-                );
+                var token = new JwtSecurityToken(
+                        claims: claims,
+                        expires: DateTime.Now.AddDays(1),
+                        signingCredentials: creds
+                    );
 
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+                var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return jwt;
+                return jwt;
+            } catch (Exception e)
+            {
+                return null;
+            }
         }
     }
 }
